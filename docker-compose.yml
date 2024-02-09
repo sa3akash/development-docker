@@ -1,0 +1,47 @@
+#docker-compose -f mongodb-expressui.yml up -d
+version: "3.8"
+
+services:
+  redis-stack:
+    image: redis/redis-stack-server
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+    # environment:
+    #  REDIS_ARGS: --requirepass $REDIS_PASS
+    # environment:
+    #   - REDIS_ARGS:"--appendonly yes"
+    #   - REDIS_ARGS:"--requirepass root"
+      # command: redis-server --save 20 1
+      # command: redis-server --dir /data --save 60 1 --appendonly yes
+    networks:
+      - development
+
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    volumes:
+      - mongodata:/data/db
+      - ./db/init-mongo.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    ports:
+      - 27017:27017
+    # command: mongod --auth
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=mongopass
+      - MONGO_INITDB_DATABASE=social
+    networks:
+      - development
+    #echo 'db.runCommand("ping").ok' | mongo 10.10.10.60:27017/test --quiet
+
+
+networks:
+  development:
+    driver: bridge
+
+
+volumes:
+    mongodata:
+    redis-data:
